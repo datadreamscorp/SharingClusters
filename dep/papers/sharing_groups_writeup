@@ -1,0 +1,360 @@
+### A Pluto.jl notebook ###
+# v0.18.0
+
+using Markdown
+using InteractiveUtils
+
+# ╔═╡ 8f0fa9ec-2fc6-11ec-0335-7db7be4165f1
+md"""
+### The evolution of reciprocal sharing networks under risk and uncertainty
+##### A model by Alejandro Pérez Velilla, in the year 2021 AD
+
+Imagine a stochastic enviroment in which a population of agents (which we can think of as individuals or as domestic units), of size $N$, individually works at niches in order to earn a benefit $B$ every time period, with a rate of success $u \in (0,1)$. In other words, the agent assesses the viability of the niche and exploits it if it is viable in the present moment. Equivalently, we may imagine these individuals are foragers who find an exploitable patch of resource with probability $u$ per time period. In this sense, niches/patches can seen as be opportunities such as hunting spots, horticultural sites under favorable climate conditions, or business ventures. We use the term niches in this text to refer to these opportunities, and we say a niche is "successful" whenever its resources are available for extraction. Thus, we can also call $u$ the security, and its complement $(1 - u)$ we can denominate risk.
+
+How does risk relate to reciprocity? To answer this question, first assume that agents in our population observe and judge one another with respect to some social learning heuristic, in order to potentially better their current strategy. Likewise, we can also think of this process as a random agent abandoning the dynamic, while a new one comes in, keeping the population size constant. In a single time period, a random agent will abandon the dynamic with probability $\frac{1}{N}$ and be replaced by a new one, who will sample the population and learn a strategy present in the sample with a probability proportional to the strategy's fitness (this can also be seen as the outgoing agent deciding to randomly sample the environment in order to modify their strategy). The incoming agent has the ability to distinguish between available strategies (perhaps because strategies correlate with social markers), and we suppose the agent chooses $n$ models for fitness comparison. Regardless of the number of strategies, we say that $n = N$ for the scenario in which the agent samples all the models in the population.
+
+"""
+
+# ╔═╡ fb06fa9b-b1a1-4edf-91cc-2c3c3f001ddb
+md"""
+
+###### Alone or in company? An initial dilemma
+
+To begin, we will characterize strategies solely by their long-term expected payoff. This means agents will weight possible rewards and losses using their knowledge about the risks of the environments and how their actions interact with it. When choosing a model to imitate, they will base themselves on nothing other than relative expected payoff magnitudes. The simplest strategy to deal with this risky environment will be to assess the viability of a niche and to exploit it if it proves to be viable. This is the Loner strategy, which avoids explicit social interaction, and thus has a long-term expected payoff of
+
+$V(Loner) = uB + (1-u)*0 = uB$
+
+So the fitness of this agent will be
+
+$W(Loner) = w_0 + uB$
+
+where $w_0$ denotes the average cultural fitness of the population. Now, imagine that successful niches not only have work capacity for one agent, but that they can actually accommodate $m$ more agents (so niche capacity is $m + 1$), who can also try their luck at the niche for a benefit of $\alpha B$ and with a rate of success $\lambda \in (0,1]$. We call $m$ the additional niche capacity, $\lambda$ the rate of success of late-comers and $\alpha \in (0,1]$ the proportion of benefit for late-comers. The presence of $\lambda$ and $\alpha$ allow us to accomodate situations in which informed agents have to re-assess the viability of the niche (i.e. my cousin told me about job openings, but I still have to try my luck and send my CV), and situations in which late-comers get a reduced benefit (perhaps because being first-comer comes with additional benefit; they hunted the best game in the herd before the rest of us arrived). This might be important for cooperation, because first-comers in a niche having an extra benefit relative to late-comers might help incentivize searching behavior without the need to explicitly enforce against non-searching free-riders.
+
+This setup permits the insertion of a first social strategy, which invades as a cluster of connected agents. For simplicity, let us imagine a number $N_0^c$ of agents get together and explicitly agree on certain group norms for interaction. This fully-connected network is then augmented by the ocassional recruitment of new cluster members, who may or may not connect with other cluster agents with a random linking probability $p_i$ (representing an agent's sociality pattern, possibly learned with error from their recruiters). Each agent $i$ has a degree $k_i$, and the cluster has mean degree $\bar{k}$. Connections are assumed to be potentially costly, with a per capita cost of $C \in [0, \infty)$. This cost may come from the basic requirements necessary to maintain interaction, like communication and coordination. Examples could be the energetic, economic and time costs of physically meeting peers with enough frequency to maintain the connection. Connected agents try their hand at niches, and if they happen to be working at a successful niche, they will invite random network peers who tried their hand at failed niches until the niche capacity is filled. These peers will go on to try their hand at the exploited niche for a $\lambda$ chance to earn $\alpha B$. We call this strategy Informer, because they inform their connections of available opportunities at their niche, and thus have an expected individual payoff of
+
+$v_i (Informer) = \underbrace{ \bigg \{u + (1 - u) \sigma_i \lambda \alpha \bigg \} }_{\rho_i} B - k_i C$
+
+with fitness
+
+$w_i (Informer) = w_0 + \rho_i B - k_i C$
+
+We call $\rho_i$ the total security of agent $i$, which incorporates their individual security and the additional group security from the social interaction in their strategy. From here onward we assume that $k_i \simeq \bar{k}$, such that most agents' degrees are close to the mean degree, and new agents who copy informers not only copy their strategy but also their linking probability with some noise. In other words, not only norms are copied, but also sociality patterns. The linking probability dictates the probability of forming a connection with any other group member, and such controls the agent's degree. We also drop the conditional, such that $V(Informer) = V(Informer|\bar{k})$.
+
+The probability $\sigma_i$ is the joint probability that the agent's connections' niches don't all fail and that the agent is chosen by one of its connections to occupy one of the $m$ free spots in the niche. Therefore, we write 
+
+$\sigma_i = P(NetSuccess,Chosen|k_i,m) = P(NetSuccess|k_i)*P(Chosen|k_i,m)$ 
+
+where 
+
+$P(NetSuccess|k_i) = \gamma_i = 1 - (1 - u)^{k_i}$ 
+
+is the probability that there was at least one succesful niche among all of an agent's connections, and 
+
+$P(Chosen|k_i,m) = \beta_i = 1 - (1 - \frac{1}{(1-u)k_i})^{umk_i}$ 
+
+the probability that the agent gets chosen for at least one of the $m$ spots at a niche by one of its succesful connections. This gives us 
+
+$\sigma_i = \gamma_i \beta_i$
+
+Setting $k_i = \bar{k}$, we can now write the expected long-term payoff of clustered Informers:
+
+$W(Informer) = w_0 + \rho B - \bar{k} C$
+
+Where $\rho = u + (1 - u) \bar{\sigma} \lambda$ is the average total security. If we only care about raw payoff, then we can now compare the payoff of Informers versus that of Loners to see when a cluster of Informers can invade:
+
+$W(Informer) > W(Loner) \iff \rho B - \bar{k} C > uB$
+
+$\implies (\rho - u) \frac{B}{\bar{k}} = (1 - u) \bar{\sigma} \lambda \frac{\alpha B}{\bar{k}} > C$
+
+This expression says that when the diminished benefits scaled by the risk and $\bar{\sigma}$ (the average probability of getting a spot at a niche), and divided by the mean degree, are higher than the per capita cost of connections, then Informers have a higher payoff, on average, than Loners, and can invade a population of them. Notably, if $\lambda = u$ (same chances of getting to exploit the niche as the first-comer), $\alpha \rightarrow 1$ (niche benefits are not reduced for late-comers), and $\bar{k}$, $m$ and $u$ are large enough so that $\bar{\sigma} \simeq 1$ (high per-connection probability of getting chosen to share a niche with), then this reduces to
+
+$u(1 - u) \frac{B}{\bar{k}} > C$
+
+and the magnitude of shared benefits depend on the variance in risk, such that it is maximized in maximally variable environments where $u = \frac{1}{2}$. This is because maximally variable environments in these conditions will have the optimal combination of people working at successful niches and people working at failed niches, and the latter will get invited to others' succesful niches for a second chance at getting the benefit. Every time period, about half the population are losers, but (on average) they all get a second chance, reducing their risk to $(1 - u)^2 = \frac{1}{4}$. If $\lambda = 1$, then the above expression becomes
+
+$(1 - u) \frac{B}{\bar{k}} > C$
+
+and risk proves to be beneficial for the formation of clusters of Informers, since one person working at a successful niche might mean many more also get the associated benefit.
+
+Also note that, if $m$ is large enough, the value of $\bar{\sigma}$ depends on $u$ and $\bar{k}$. Risk is a feature of the environment, but mean degree is a function of individual degrees $k_i$. So if an Informer's degree is large enough (and $\bar{k} \leq \frac{m}{1 - u}$) so that $\sigma \simeq 1$, then the agent's (and, in the aggregate, the cluster's expected) degree being any higher does not bring any additional benefits, as they are as insured as they can get. On the contrary, more connections would thin their benefits with each additional unit of degree, such that if degree grows too much, then the diminished benefits may end up being overtaken by the costs. Therefore, the fitness function is peaked in mean degree $\bar{k}$, and clusters have a limit to what their mean degree can get to be before it becomes as profitable (or more) to be a Loner. In other words, if the cost of being fully insured outweights the expected benefit of being part of the information network, then it pays equally well, or even better, to go at it alone.
+
+Under the right conditions, paying a cost to connect with other people is a good strategy to deal with changing/risky environments, through the information-bearing capacities of social networks. I am better insured when I count not only on my chances of finding a work opportunity on my own, but also on my cousin Roman calling me when there are extra job openings at the place he just got hired at. And Roman enjoys the benefit of counting on me when I find a good opportunity. But can we be any better insured?
+
+
+"""
+
+# ╔═╡ a1376b33-ba41-48d4-a181-c335455f5c7a
+md"""
+
+###### The attack of reciprocal sharing
+
+Let's see what happens when agents not only share information, but also benefits. Does this provide any extra insurance for our agents? To explore this question, we construct the payoff of Reciprocal Sharers (whom we will just call Sharers), who coordinate under a reciprocal sharing norm where they split a share $s \in [0,1]$ of their payoff for working at a viable niche (if they find one) equally between all their connections (when they obtain one), and stay with the remaining $(1 - s)$ of the benefit. This is a reciprocity-based strategy: us being connected means that whenever I get something, I give a part to you, regardless of need. And I expect you to extend the same courtesy to me. Strategies like these might be straightforward to enforce. This is because any added benefit that they may bring depends on continued social interaction, so punishing free-riders is as simple as cutting off interaction with them.
+
+First, we explore agents who share benefits but don't inform others of new opportunities:
+
+$v_i (Sharer) = \underbrace{ (1 - s)uB }_{\text{kept individual benefits}} + \underbrace{ s u k_i \frac{B}{\bar{k}} }_{\text{received shared benefits}} - k_i C$
+
+The Sharer gives up a portion of their payoff, and receives a complementary split share from each of their connections, provided they themselves get the benefit. The average degree of the cluster $\bar{k}$ appears in this expression as an approximation of the degrees of the Sharer's connections (the agent does not know their peers' degrees with certainty), so we should already consider this expression to be an approximation of an individual sharer's payoff. For the average Sharer, $k_i \simeq \bar{k}$, giving us the expected long-term payoff of Sharers: 
+
+$V(Sharer) = (1 - s)uB + s u \bar{k} \frac{B}{\bar{k}} - \bar{k} C$
+
+which translates to a cultural fitness
+
+$W(Sharer) = w_0 + (1 - s)uB + s u B - \bar{k} C = w_0 + uB - \bar{k} C$
+
+The first thing to consider is that Sharers are at a disadvantage against Loners, which makes them even worse against Informers. This is obvious when considering that the first two terms in the payoff expression add up to $uB$, which is the payoff to a Loner. Since Sharers are additionally paying a connection cost, they have a hard time competing against Loners. But surely it would be rather strange to have people (or domestic units) cooperating by sharing benefits without also sharing information. By adding the sharing of information to our sharing clusters, we have a more general strategy, which we will denominate Sharer-Informer:
+
+$w_i(Sharer-Informer|k_i) = w_0 + (1 - s) \rho_i B + s \rho B - k_i C$
+
+where $\rho_i = u + (1 - u) \sigma_i \lambda$ is the total security for the individual agent, as opposed to $\rho$, the average total security (for the agent's network peers). Surely this strain of Sharer has better chances against Loners. And it does! In fact, it has the exact same long-term expected payoff as the Informer strategy:
+
+$W(Sharer-Informer) = w_0 + (1 - s) \rho B + s \rho B - \bar{k} C = w_0 + \rho B - \bar{k} C$
+
+This must mean that sharing benefits adds nothing to our dynamic once we have sharing of information, right? If the only thing we care about is the long-term average, then this is true. But is it reasonable to think that this is what the human cares about? After all, benefits might be important to think about not only in the long-term, but also in the short- or even immediate-term. If time periods are months or years, then going a full period without earning a minimally-preferred or even necessary amount of benefit might be a very undesirable outcome. In order to incorporate this into our calculations, we first have to re-frame our problem in terms of limited information, observation and estimation with uncertainty, which will motivate a subtle extension of our game-theoretical framework.
+
+The idea behind the proposed difference between the sharing strategies and both Loner and Informer strategies is that we concentrate on what happens in a single time period. So far, we have been calculating long-term expected payoff as a time average: we imagine a random sequence of wins and losses, and average them over the total amount of time periods. This is true of both Loners and Informers, and in the long run, also of Sharers and Sharer-Informers. But in the short run, in the space of a single time period, Loners and Informers either get some benefit or they don't (with probabilities $u$ and $\rho$, respectively). On the other hand, the second term in the Sharer payoff, the total shared benefit, is an ensemble average: the average shared payoff an agent gets from all their connections in a single time period! This means that, given that this payoff is not being cancelled by the costs, Sharers and Sharer-Informers are getting a non-zero payoff every time period with certainty, while Loners and Informers aren't. This is true given that
+
+$s \rho k_i \frac{B}{\bar{k}} - k_i C > 0 \iff s \rho \frac{B}{\bar{k}} > C$
+
+If the per-capita shared benefit that an agent receives is higher than the per-capita cost of connection, then sharing strategies are receiving a consistently non-zero payoff every time period. Until now, we have been looking at agents that use a purely payoff-biased social learning strategy. But cultural evolutionary theory indicates that we have no good reason to believe human learning is purely payoff-biased. Human beings around the world might use different heuristics to imitate behavior from others, given the circumstances. In some situations, I might not choose to imitate someone simply because they had a high payoff in the present moment. I would look at their payoff, but also at their history. If cousin Roman likes high-stakes casino games, I might stumble upon him at a moment where he achieved a great win at blackjack. But if I speak with his mom (my aunt) she will tell me he's perpetually broke because of his habit, and that he sold his car to get enough money for his current win. That will be enough for me to not choose to imitate Roman, since I'd rather go for someone who maybe doesn't get huge payoffs, but those she gets, she gets consistently.
+
+"""
+
+# ╔═╡ ef6723f5-9b8b-4f89-87f7-61035685b709
+md"""
+
+###### Rates of success, temporal stability and uncertainty
+
+Imagine we are an agent who just arrived at this environment and can observe the result of other agents' performances in the present time period. We see what people did, and how much benefit it got them. Additionally, we have some source of information on how people did in past periods. Using these two sources of information, we have to decide who to learn from. We have shifted from a scenario where we know the explicit dynamics that strategies exploit and we consider the mean outcome from applying the strategy, to one where we know nothing but which strategies are being used, what payoffs their users are getting, and how consistently well they have done in the past (relative to some minimum acceptable amount of benefit). A decision-maker, in this scenario, will want to incorporate this information into a coherent framework that would allow the evaluation and comparison of strategies' cultural fitnesses. This requires estimation, which introduces uncertainty into the decision-making process.
+
+Any given time period, there will be some successful users of non-sharing strategies, as well as some successful users of sharing strategies and unsuccessful users of sharing strategies that still receive some average shared benefit. A successful Informer will get $B - \bar{k}C$ and a successful Sharer-Informer will get $(1-s)B + s \rho B - \bar{k}C$. But we do not take these successes for granted when choosing which model to imitate. Rather, we assume that each component of these strategies (which correspond to the different actions associated to the strategy, like partitioning a payoff for sharing, and receiving some average shared benefit from connections) has a rate of success that we have limited information about. By estimating these rates of success, we will have proper weights to average out the possible outcomes of the observed strategies. In a way, we are approaching the problem from the opposite perspective: before, we knew the rates of success associated to strategies, and we used this to compare their average long-term performance in order to make a decision. We were gods, my friend! Now, we are mortals.  We know the present payoff of strategies, and we want to estimate the rate of success of a strategy given its past performance, using the limited information we have around. Only after doing this will we be able to compare two different strategies.
+
+Rates of success are always relative to some criterion. This means that what is considered as a "success" depends on a minimum quantity of benefit that we wish to be getting with our actions. In the following, we will assume that this quantity is zero, for convenience. As long as we are not getting zero, we consider ourselves minimally successful. However, the model can be easily extended to any minimum value of benefit, as will be explored further below.
+
+Another detail about estimating rates of success is that the information we use to estimate them can be direct or indirect. I focus here on the case of direct information, but thinking about how indirect information (like social cues and identity markers) can be used for rate of success estimation opens some interesting possibilities for theoretical and empirical inquiry (I comment more on this in the final subsection).
+
+Assuming that we have information on the amount of successes agents have achieved $\tau$ periods in the past, we can estimate a rate of success in a straightforward way by dividing number of successes by $\tau$. The estimate $\hat{r}_i$ of the $i$th additive component of a strategy is a beta-distributed random variable, but for illustration purposes we will assume $\tau \rightarrow \infty$, as this means the estimated rate of success will converge to its "objective" value. In the case of the Loner strategy, this is the environmental variable we called security, $u$. But how seriously do we take this estimation? In real life, even when we have access to direct information, $\tau$ is unlikely to be large enough for us to have complete faith in our estimate. We have to minimally incorporate how we handle this uncertainty into our decision-making. This can be done by giving our final estimated rates the following probability weight functional form:
+
+$p_i = \hat{r}_i^{\delta}$
+
+where the probability weights $p_i$ for every possible outcome component of the strategy will depend on $\hat{r}_i$, a raw estimated rate of success of component $i$ of the strategy, and $\delta \in [0,\infty)$, a risk preference. The idea behind risk preference is that it links the raw result of the estimation procedure, with its associated uncertainty, to the agent's personal and environmental conditions. In other words, it describes how high or low the stakes are for the agent deciding on which behavior to learn, and by doing so influences how the agent weights the outcomes based on their estimated rate of success. The stakes, in this case, are given by what happens whenever an agent spends a time period without earning any benefit. If the stakes are high, then going without benefit for a period can be bad, and going without benefit for any more can be much worse, so we might wish to be pessimistic when considering how much we should trust our estimation. In other words, the less time periods that we can plausibly spend earning a payoff below a certain threshold, the stronger our risk aversion will be. This is the case of pessimism/risk aversion, where $\delta > 1$ and $\hat{r}^{\delta}$ is convex. When $\delta = 1$, we trust our estimate completely, and we are back to where we started in terms of how we weight the potential outcomes of our decisions. This shows the previously used game-theoretical framework is a special case of this more general framework, one where we have full information, we completely trust our estimate, and there is no danger from zero-payoff periods. When $0 < \delta < 1$ we have risk-seeking decision-making and a concave $\hat{r}^{\delta}$, which means we are over-estimating the value of our estimate, perhaps because we don't care much for having periods with no benefit and thus get excited more easily by the possibility of particularly large payoffs, even if risky. Finally, when $\delta = 0$, we only care about the present moment, and we disregard all past history and agent trajectories. The strategies that are earning the highest benefit in the current time period will be the ones with the highest cultural fitness from the point of view of the incoming learner.
+
+We can now propose a functional form for the fitness of strategy $i$ that incorporates the estimated rate of success:
+
+$W_{i} = w_0 + \sum_j{p_j V_j} = w_0 + \sum_j{\hat{r}_j^{\delta} V_j}$
+
+in which we separate the strategy into its different additive components $V_j$, each with an associated estimated rate of success. Now we are ready to re-write the strategies and evaluate the cultural fitness of reciprocal sharing strategies. The raw estimated rates for the non-sharing strategies when we can look back into the past infinitely will be $\hat{r}_L = u$ for Loners, and $\hat{r}_I = \rho$ for Informer benefits (as long as Informer clusters are not too high-degree on average, because Informers always pay the costs of connection). On the other hand, given that per-capita shared benefits are higher than the costs, sharing strategies will have $\hat{r}_S = 1$ for their received shared benefits (a cluster success rate) and their costs, while the individual part of their payoff is weighted by their individual success rate, just as for their non-sharing analogues. Given these rates, the new fitness expressions for payoff-and-rate-biased social learning:
+
+$W(Loner) = w_0 + u^{\delta} B$
+
+$W(Informer) = w_0 + \rho^{\delta} B - \bar{k} C$
+
+$W(Sharer) = w_0 + (1 - s) u^{\delta} B + 1^{\delta} s u B - \bar{k} C$
+
+$W(Sharer-Informer) = w_0 + (1 - s) \rho^{\delta} B + 1^{\delta} s \rho B - \bar{k} C$
+
+These new long-term fitnesses give the conditions that can put Sharers above Loners, given that connection costs are not too high relative to per-capita shared benefits, and that $\delta$ is above 1:
+
+$W(Sharer) > W(Loner) \iff s u (1 - u^{\delta - 1}) \frac{B}{\bar{k}} > C$
+
+This result shows that sharing can evolve provided agents are acting under pessimistic decision-making when choosing which strategies to adopt. When agents are not pessimistic, $\delta \leq 1$ and the left-hand term becomes negative. This is intuitive, because agents being pessimistic is the same as them being especially concerned with the possibility of not getting anything. This pessimism might come from a cognitive bias, but it is plausible to think of it as coming from a reasonable response to being embedded in a hostile, high-stakes environment where payoff consistency in time is especially important. For Sharers to beat Informers, we have
+
+$W(Sharer) > W(Informer) \iff s u (1 - u^{\delta - 1}) > \rho^{\delta} - u^{\delta}$
+
+The competition between strategies depends on the difference between estimates, as well as having a pessimistic risk preference and a non-zero value for the expected proportion of received shared benefit $su$. Under the right conditions, even Sharers can face against Informers. Note that, for simplicity, we compare strategic clusters with equal mean degrees, but this is not necessarily the conditions under which these clusters compete. Finally, the condition for Sharer-Informers to beat Informers becomes
+
+$W(Sharer-Informer) > W(Informer) \iff s \rho (1 - \rho^{\delta - 1}) B > 0$
+
+Sharer-Informers have it even easier against Informers than Sharers have it against Loners (but they still have to be pessimsitic). This is because Sharers, Sharer-Informers and Informers are paying costs to connect to others in their clusters, while Loners pay no costs at all. As long as there is some pessimistic risk preference, Sharers will beat Informers, assuming that enough sharing is happening. It is important to say that both Sharers and Sharer-Informers will only enjoy these benefits in fitness as long as the shared benefits that they are obtaining from their connections do not get cancelled by the costs. We remind the reader of these condition.
+
+For Sharers: $s u \frac{B}{\bar{k}} > C$
+
+For Sharer-Informers: $s \rho \frac{B}{\bar{k}} > C$
+
+When these shared benefits get cancelled by the costs, then the payoff for each of these strategies will be equal to their individual payoff (as the shared payoffs are being consumed by the connection costs), and risk preference won't be able to salvage sharing benefits as a viable strategy versus non-benefit-sharing strategies.
+
+We have modeled fitness as a function of agents' preferences when learning socially, using information the agent knows is incomplete and incorporating a probability weighting scheme to account for this. A strategy can be divided into two additive component parts: pessimism-resistant components for which $\hat{r}_i = 1$ at least for a range of parameter values, and pessimism-prone components for which $\hat{r}_i < 1$ which get penalized under conditions favoring pessimism. There are many possible reasons for wanting to choose lower variance in payoff over high-risk bets. A basic example would be a parent who wants to have a constant influx of income to invest in childcare, rather than be susceptible to random oscillations in income that could leave the child malnourished during a critical period. Sharing a little might go a long way in establishing stable networks of reciprocal sharing.
+
+We have done these calculations assuming agents will be content with a non-zero payoff. But what if they count any payoff below a certain payoff $B_{min} = zB$ (with $z \in [0,1]$) as a failure? We can explore this by imagining a more dire scenario in which this question becomes central.
+
+"""
+
+# ╔═╡ bcce7181-3e18-44cb-bb86-1dcdd1d8ec22
+md"""
+
+###### Strong selection: sustenance thresholds and individual-group survival
+
+Let's imagine $w_0 \rightarrow 0$. The fitness of agents depends strongly on their ability to deal with environmental risk. Why? Because agents that get no payoff in a time period will have a fitness close to 0. In other words, they'll likely suffer badly (or even die) if they go without payoff for one time period. This means that learners will tend to be extremely pessimistic, as the stakes are very high: $\delta \rightarrow \infty$, which means that strategies (and components of sharing strategies) that have a rate of less than one tend to zero. This is the limit of strong selection, which we can also call the limit of strong risk-aversion.
+
+For simplicity, we assume that there is a threshold amount of benefit $zB$, with $z \in (0,1)$ a threshold proportion of benefit ($\frac{b_{min}}{B}$) such that agents that get less than this amount of payoff disappear from the learning dynamic (i.e. they are never learned from, and they are replaced by a random agent in the next time period). Resources are also perishable, such that agents cannot carry their payoff onto the next time period. In this extreme (but by no means unrealistic) scenario, estimated rates of success are calculated with respect to $zB$, and so Loners and even Informers will tend to disappear, as their estimated rates will tend to zero with the highly pessimistic weighting. Imagine now that a group gets together with the intention to survive, and for this purpose they negotiate a reasonable sharing norm: if an agent is successful at earning the benefit, they will keep enough of it to continue to the next time period in good shape, and the rest of the benefit they share among their connections. In other words, $s = 1 - z$, and fitness of Sharers becomes
+
+$\lim_{\delta \to \infty} W(Sharer) = \lim_{\delta \to \infty} z u^{\delta} B + (1 - z) u B - \bar{k} C = (1 - z) u B - \bar{k} C$
+
+This is us, as eager imitators, paying particular attention to the moments in which an agent fails at obtaining individual benefits. In that case, in order to survive, the shared benefits the agent gets through their connections are the only thing that can save it. Mathematically, this means we want
+
+$(1 - z) u B - \bar{k} C \geq zB$
+
+which leads us to the condition
+
+$\bigg \{ (1 - z)u - z \bigg \} \frac{B}{\bar{k}} \geq C$
+
+The right side can only be greater than zero when
+
+$(1 - z)u > z \iff u > \frac{z}{1 - z}$
+
+In words, $z$ has to be lower than $\frac{1}{2}$ for this dynamic to be able to properly insure agents. So dynamics that produce high benefits relative to needs are necessary to maintain enough productivity for sharing to insure the group (and thus individuals) against environmental risk, and then security must be high enough that it exceeds the ratio between the proportion that is kept and the proportion that is shared. As long as agents are giving up more than half of what they make, other connected agents who did not make anything in the current period can add up enough shared benefits to, on average, survive. These agents go on to potentially earn benefits in the next turn, which can end up saving whoever contributed to saving them in the past. It is also worth noting that, for the above condition to be fulfilled, we must also have $z < u$, since if $z = u$ we have $u(1-u) > u$, which never happens.
+
+An example of this dynamic can be a hypothetical hunter-gatherer group, for which hunting big game can be a high-risk, high reward activity, in the sense that hunting down good prey might be difficult and failure-prone, but a succesful hunt is quite likely to provide much more food than what a lonely hunter needs to survive in the short term. If the hunter then brings the game to camp and gets a portion corresponding to her biological needs, other group members who weren't so successful at their food-acquiring abilities can still survive. If many hunters and gatherers are pooling high-yield resources in this manner, then the whole group can survive, which contributes to the future insurance of the individuals that make part of it. In this way, individual survival is mechanistically linked to group survival and fitness is interdependent.
+
+For Sharer-Informers the condition becomes
+
+$\rho = u + (1 - u) \sigma \lambda \alpha > \frac{z}{1 - z} \iff u > \frac{\frac{z}{1-z} - \sigma \lambda \alpha}{1 - \sigma \lambda \alpha}$
+
+Let's explore this further for the case $\sigma \rightarrow 1$ (niches have high capacity, agents have high enough degree and security is high enough that their bases are well-covered information-wise), $\lambda = u$ (rate of success is not diminished by first-comers) and $\alpha = 1$ (benefits are not diminished for late-comers). While these are very particular conditions, they will help us find an insightful explicit solution. For this case, the condition becomes
+
+$u + u(1 - u) > \frac{z}{1 - z} \iff -u^2 + 2u - \frac{z}{1 - z} > 0$
+
+Using the general solution for quadratic equations, we solve for $u$ and keep the solution that is in the bounds of our problem:
+
+$u > 1 - \sqrt{1 - \frac{z}{1 - z}}$
+
+This condition still relies on $z < \frac{1}{2}$, but is predictably more lenient than the condition for Sharers. Notably, this function grows sub-linearly from the origin, which means $u$ can now assume the value of $z$ (or even lower values) and resource allocation would still work out, except if $z \geq \frac{1}{2}(3 - \sqrt{5})$, at which point the function shoots superlinearly up to 1 and $u$ must be higher than $z$. In other words, the values of $z$ in the interval $(0, \frac{1}{2}\{3 - \sqrt{5}\})$ define a region where environments can be high-risk and group survival is still possible, while the values of $z$ in $(\frac{1}{2}\{3 - \sqrt{5}\}, \frac{1}{2})$ require environments that are fairly secure in order to meet everyone's needs (although still less secure than for Sharers). This special case illustrates the powerful ways in which sharing information can affect the dynamics of group survival in risky environments.
+
+In conclusion, while just sharing benefits might take us a long way, sharing information can bring a powerful advantage for group survival and insurance when agents' productivity is high enough with respect to needs. A cluster of Sharer-Informers can survive in a poor, risky environment, as long as they efficiently communicate resource-gaining opportunities in a dense-enough networks, and the potential rewards for their work are high enough with respect to their individual needs. And they can survive in a significantly broader range of environments than simple Sharers.
+
+The general condition, with an arbitrary $s$, is $s \rho > z$, where $s \rho$ is the average proportion of shared benefit received. For groups wishing to calculate how much to share given a total security and a minimum proportion of benefit, the inequality
+
+$s > \frac{z}{\rho}$
+
+might be of use.
+
+"""
+
+# ╔═╡ 81b5c243-d347-4759-b1f9-7249410849e7
+md"""
+
+###### Limits to sharing and internal competition
+
+So far we have concentrated on the way that sharing clusters compete with other individual- and group-strategies. However, we must also discuss the limitations of these strategies with respect to network size and structure. In the above expressions, it is evident that the mean degree of the cluster describes, in the aggregate, how shared benefits can be thinned out by growing networks. In the abscence of cluster regulation mechanisms (like explicit or implicit norms that limit recruitment into the cluster) or individual limitations to degree (like threshold effects that decrease the rate of success with increasing degree, because of the time costs associated to both working at a niche and socializing), clusters of individuals with high cultural fitness are likely to grow. To examine this, we write an expression for the mean degree of a cluster after one time period. If an individual $j$ that abandoned the dynamic at the beginning of the period was part of the cluster and an individual $i$ joins it, then (assuming undirected networks), we have
+
+$\bar{k}_{t + 1} = \frac{\bar{k}_t (N_t^c - 1) + 2 (k_i - k_j)}{N_t^c}$
+
+where $N_t^c$ is the cluster's size at time $t$. When will the mean degree of the network increase? To explore this, we set $\bar{k}_{t + 1} > \bar{k}_t$, drop the subscripts for simplicity and solve the inequality for $k_i$:
+
+$\frac{\bar{k} (N^c - 1) + 2 (k_i - k_j)}{N^c} > \bar{k} \iff k_i < \frac{\bar{k}}{2} + k_j$
+
+As long as the outgoing agent's degree matches or exceeds the incoming agent's the cluster will not grow in mean degree. If $k_j < k_i$, then their difference must not exceed half the mean degree. This does not seem so dire, after all, we are assuming that individuals do not deviate significantly from the mean degree. But in real-life scenarios they might. What happens when the cluster is gaining members, but not losing them? We need only set $k_j = 0$ to arrive at
+
+$k_i < \frac{\bar{k}}{2}$
+
+This is a bit more dire. Unless the mean degree is very small, assuming that clustered individuals' degrees do not vary significantly from the mean is likely to lead to an increasingly higher mean degree over time, which can lead to the destabilization of networks, be they Informers, Sharers or Sharer-Informers. But there is a special danger that sharing strategies are prone to that Informers are immune to: internal competition for connections. The fact that sharers cooperate does not mean that they do not also compete with one another. Payoff heterogeneity in a cluster can be a reality that sharing clusters have to worry about, as long as we assume that individuals can connect with any number of other individuals without extra penalties. To see why, let's ask when a cluster agent will have above-average payoff (we use the case $\delta = 1$ for illustration):
+
+$w_i(Sharer) > W(Sharer)$
+
+$\iff (1 - s)uB + s u k_i \frac{B}{\bar{k}} - k_i C > uB - \bar{k} C$
+
+$\implies \frac{k_i - \bar{k}}{\bar{k}} s u B > (k_i - \bar{k}) C$
+
+The conditions that determine if the incoming agent's degree is advantageous relative to the average cluster agent degree will depend not only on the magnitude, but also on the direction of the agent's deviation from the mean degree. An agent with $k_i > \bar{k}$ will enjoy a higher payoff than average when 
+
+$s u \frac{B}{\bar{k}} > C$
+
+and the relationship will flip for $k_i < \bar{k}$. This means that as long as the mean degree is not so high that shared benefits outweight the costs, having more connections than average will give agents an advantage over their network peers. This can be dangerous for three reasons, all of which are related.
+
+First, the additional benefits that above-average agents get do not come out of nowhere. Since an agent who shares with me splits their benefit across connections, connecting with agents will thin out the benefit their other connections get. If I am connecting with more individuals than everyone else, then I am accumulating benefits at the expense of the other people getting shared with. In other words, this dynamic of reciprocal sharing can lead to the emergence of hierarchy; a payoff hierarchy that maps onto the emergent degree hierarchy.
+
+Second, because an above-average degree agent achieves a higher payoff, they are more likely to be imitated not only in strategy but also in sociality. High degree agents breed more high degree agents, leading to an increase in mean degree over time. If this continues without control, then the mean degree will increase in discrete "jumps" until it overshoots the limit 
+
+$\bar{k} = s u \frac{B}{C}$
+
+At that point, it will be non-sharers who have the relative advantage. In the abscence of any other competing strategy, this will lead to below-average agents replicating until the mean degree undershoots the limit, at which point above-average degree agents recover their advantage, and the time evolution of the mean degree will show chaotic oscillations around the limit.
+
+Lastly, these internal competition dynamics can be very harmful, in the sense that they promote the accumulation of network ties, even when everyone might have enough ties to deal with environmental risk. The increasing mean degree of an unconstrained cluster eventually leads to a decrease in the fitness of the agents who belong to it and to the destabilization of sharing as the average cluster fitness approaches the non-sharing strategies' fitnesses. After all, the limits to mean degree imposed on the cluster by the presence of other strategies are even more restrictive than the within-cluster limit explored above. And the fact that mean degree is a property of the group and not of a single individual means that it is beyond individual control: the only thing a cluster agent can do to try to fight the thinning of their benefits is to gain more connections, exacerbating the problem at the group level. These results apply to Sharer-Informers as well, exchanging $u$ for $\rho$.
+
+"""
+
+# ╔═╡ fa9154c3-8bc2-49a6-a0ca-1b8756048326
+md"""
+
+###### Hierarchy and egalitarianism
+
+In real life, people do not have the ability to connect and share with an arbitrary number of other people, and network structure might find itself constrained by several factors like geography, local ecology, historical conditions, community structure, strategic defensible positioning and/or cultural norms. At the individual level, psychological exhaustion or time costs of connection maintenance (and tradeoffs with time costs of working) might limit the degree most individuals can achieve. At the level of norms and heuristics, agents might choose not to connect with other agents whom they perceive as not sharing enough (perhaps because they are too connected and the benefits they share divided among too many peers) and instead choose to invest more on a smaller set of network peers who do. Nevertheless, the way that degree hierarchy maps onto payoff hierarchy can be useful to think about how communities that run on reciprocity work, and how these factors relate to the patterns of hierarchy and egalitarianism we may find around the world. A community whose patterns of interaction and sharing resemble the structure of a scale-free network will be one in which a small amount of individuals recruit a high number of reciprocity relations relative to the general population. This translates to an advantage in obtaining shared benefits and potentially valuable information in exchange for the obligations dictated by reciprocity. Maybe few individuals start out in a position that allows them to do this, while most community members have a harder time achieving such centrality.
+
+A simple scenario in which we can explore this dynamic in which reciprocity leads to hierarchy is at our limit for strong risk aversion and assuming there are some agents that have procured defensible positions at rare niches which either give higher benefits than normal niches ($B_2 > B_1$ where $B_1$ is the common niche payoff and $B_2$ is the rare niche payoff) or are more secure on average ($u_2 > u_1$ where $u_1$ is the common niche security while $u_2$ is the rare niche security). Let's work with the second alternative, and explore the simple case where there is only one of these agents enjoying higher individual security, and it seeks to insure itself further by connecting in reciprocal sharing relations with agents at more common, less secure niches, who themselves are looking for the safest way to connect and insure themselves.
+
+First, competition between agents in the highly-secured class conforms to the same pattern we examined above. That is, given that these agents are obtaining the minimum benefit and sharing the rest, the shared benefits a highly-secured agent $i$ receives will be higher than another agent $j$'s if $i$'s degree is higher and the received shared benefits are not too thin on average. For this case, let us consider that $\bar{k}_1$ is the mean degree of agents at the common, less secure niches, and that sharing strategies are denoted with a 1 for agents in the low-security class and 2 for agents in the high-security class:
+
+$w_i(Sharer_2) > w_j(Sharer_2)$
+
+$\iff (1 - z) u_1 k_i \frac{B}{\bar{k}_1} - k_i C > (1 - z) u_1 k_j \frac{B}{\bar{k}_1} - k_j C$
+
+$\iff (k_i - k_j)(1 - z) u_1 \frac{B}{\bar{k}_1} > (k_i - k_j) C$
+
+Assuming that $k_i > k_j$ gives us
+
+$\implies (1 - z) u_1 \frac{B}{\bar{k}_1} > C$
+
+which is our previous condition for when accumulating more connections is advantageous. As long as this limit in mean degree is not passed, more connections mean more shared benefits, and highly secured agents will accept the offers of reciprocity from lower-security agents. The most important insight comes from asking ourselves when an average-degree agent at a low-security niche who preferentially connects with the agent $i$ (who is at the high-security niche) has higher fitness than another average-degree agent who only connects with other low-security agents:
+
+$W(Sharer_1 | \text{seeks connection with } Sharer_2) > W(Sharer_1 | \text{no connection with } Sharer_2)$
+
+$\iff (1 - z) \bigg \{ \frac{u_2}{k_i} + \frac{(\bar{k} - 1) u_1}{\bar{k}} \bigg \} B > (1 - z) u_1 B$
+
+$\implies \frac{u_2}{k_i} > \frac{u_1}{\bar{k}}$
+
+So it will be better for us to preferentially attach to agents at more highly-secure niches, unless these agents become so connected themselves that the shared benefit we perceive from them is actually equal or lower than the one we perceive from our less-secured peers. Under these conditions, seeking optimal reciprocity relations in environments with heterogeneity in niche benefits and risks will lead to reciprocity hierarchies, characterized by hierarchichal patterns in network structure and payoff distribution.
+
+If there is a limitation to how many other agents we can plausibly connect to in relations of reciprocity, then agents at less secure niches are definitely better off preferentially connecting to agents at more secure niches before trying to connect with less-secure peers. This preference can be thought of as a fitness-biased sociality pattern: agents link with high fitness agents earlier and with a higher probability than with agents who have relatively lower fitness. In extreme cases, this pattern could conform, structurally, to the degree hierarchy in preferential attachment network models: a small class of agents at highly-secure niches are in a position to accept and accumulate reciprocal connections (and thus ensure themselves with more shared benefits) while agents at less secure niches seek to attach themselves with these highly-secured individuals before anyone else, as they provide better security (as long as high-security agents are not too connected relative to lower-security agents). This characterizes a "more-secure-gets-richer" dynamic. In any case, the agents at high-security niches are in a good position: they can be stricter with how much shared benefit they must get from a connection in order to be willing to keep the connection, but even when they accept the same amount of shared benefits than everybody else, they will still end up accumulating more reciprocity ties than agents at lower-security niches. In the case of higher-benefit niches instead of higher-security niches, this would literally be a "rich-gets-richer" dynamic. If Regina is consistently popular and I am not so much, I might still get a good deal out of connecting with her, even if the time she can dedicate to our friendship is less than the one I dedicate to it (and as long as some of that sweet popularity rubs off on me). But if she cannot dedicate enough to me that I perceive any actual benefit from it, then I am better off not approaching her and sticking with my band of weirdos.
+
+On the other end of the spectrum we have a fully-connected network, where everyone gets the same amount of shared benefit on average. In such a network, $\bar{k} = N^c - 1$. This scenario of egalitarianism is special, because when everyone is connected to everyone else, both benefits and information flow efficiently, and if the community seeks to regulate itself then they have turned the difficult task of regulating every individual's particular degree into the (comparatively) easier one of regulating the size of the cluster. Remembering our condition for group survival under strong selection (this time for the more general Sharer-Informers, and ignoring the superscript for cluster size), we now have
+
+$\bigg \{ (1 - z) \rho - z \bigg \} \frac{B}{N - 1} > C$
+
+This is the mathematical territory of egalitarian hunter-gathers and horticulturalists, communes, and idealized socialist state societies. This expression says that fully egalitarian societies can exist as long as per-capita productivity is high relative to individual necessity, costs of connection and group size, and that there is a manageable level of enhanced risk for our network. For small scale societies, costs of connection and group size can be low due to potential organization in small, cohabiting bands. And when bands grow in size, group fission can be a good strategy to keep the group size low. In large-scale societies, state-level institutions may take over the role of indirectly connecting individuals, both information- (through job allocations for the unemployed) and benefit-wise (through taxes and redistribution, in which case $s$ reflects the proportion of payoff given as tax). This would be another way of achieving low connection costs, and the main preoccupation becomes keeping a high level of productivity relative to individual needs and group size. After all, If there are many mouths to feed but not enough being produced to share around, our egalitarian utopia's days are numbered.
+
+"""
+
+# ╔═╡ cc362612-3b67-483b-9b55-933f0a9a1b65
+md"""
+
+###### General forms for the reciprocal sharing model and final remarks
+
+When we seek to characterize strategies not only through their expected long-term payoff, but also by their stability in time, we can use the general framework
+
+$W_i = w_0 + R_i^{\delta} V_i$
+
+where $W$ is the cultural fitness of a strategy $i$, $R_i^{\delta}$ is a vector of estimated rates of success with respect to some threshold per-time-period payoff quantity and some risk preference $\delta$, and $V_ i$ is a vector of additive payoff components associated to each rate. By associating each component of payoff to its respective estimated rate, we can see how strategies compete under different schemes of information limitations and different regimes of selection strength for temporal consistency. And if $\delta = 1$ and $\hat{r}_i = r_i$, we are back to just evaluating strategies using their long-term expected payoff, which ignores variance in time.
+
+For sharing models like the one examined in this paper, the form
+
+$\hat{r}_{I}^{\delta} V_{I} + \hat{r}_{S}^{\delta} V_S > \hat{r}_{NS}^{\delta} V_{NS}$
+
+can be used to assess the viability of a sharing strategy versus a non-sharing one. The subscripts $I$, $S$ and $NS$ indicate rates and payoffs associated to the Individual (non-sharing) component of a sharing strategy, the (received) Shared benefit component of a sharing strategy, and the rate and payoff associated to the particular Non-Sharing strategy, respectively. This conforms to the above proposed framework.
+
+A general relationship that might prove useful is one that can be adapted to assess the evolution of reciprocal sharing communities at the limit of strong risk aversion, which we derived above, and which we write now in general form:
+
+$\bigg \{ s \rho - z \bigg \} \frac{B}{\bar{k}} > C$
+
+where $\rho$ is called the total security, and it acquires the general form
+
+$\rho = u + \mu$
+
+with $u$ the average individual security and $\mu$ an additional group security that can be specified by the particular mechanisms of grouping and information-sharing present in the population of study. In risky environments (like those faced by subsistence communities, or those present in low socioeconomic status, high-crime neighborhoods in urban environments), individuals are likely to be risk averse, as the stakes are high. We can expect individuals to find ways to use benefit and information sharing in innovative ways in order to overcome the perceived risk in their environments, and the proposed relationship can be used to capture these resulting group dynamics.
+
+The concept of risk preference for cultural fitness maps onto the concept of strength of selection for biological fitness, as they both describe how high the stakes are in an evolutionary scenario. Since cultural fitness describes how attractive a strategy is as a target for learning relative to other observable strategies, individuals are likely to be more risk averse in their learning decision the higher the stakes are. When I don't even know if I will have anything to eat tomorrow, I will pay special attention to learning behaviors associated with consistent payoffs, instead of being tempted by high-payoff, high-variance behaviors. If these are strategies for biological evolution, then when the stakes are high and environments are stochastic, strategies that hedge their reproductive bets are likely to have an advantage over strategies that don't (even when these competing strategies might have a higher expected reproductive output) by avoiding zeros in the reproductive trajectory. Thus, risk preference encodes the iimportance of getting something out of a decision in the present moment, even if not much compared to riskier alternatives.
+
+Studying how people assess each other's rates of success by using social information when direct information is not present or is very limited can be an interesting research program, as in this light (alongside risk preference), social learning strategies can be seen less as evolved cognitive biases and more as logically salient solutions to common problems of decision-making under uncertainty, which work by exploiting common sources of social information (frequencies of strategies, reputations, social cues, publicly-accesible personal information, identity markers, etc.) other than raw payoff magnitudes in the present. And it becomes reasonable to think of how these strategies can be nested within each other. For example, if I am an immigrant in a country I am unfamiliar with, I will be on the lookout for social learning opportunities that will help me get by. I can assess the payoffs of successful-appearing individuals and use the limited information I have to estimate rates of success, maybe through the use of publicly-circulating reputations. However, I will be more pessimistic when weighting the rates of success of successful natives than I will be when doing so for fellow immigrants of common background. This is because I assume that my shared background with fellow immigrants could have an important effect in the success of the strategy. I do not need to know for sure that my background will have such an effect, but by assuming it does, I am being safe by constraining the search space to people who are doing well in the present, are known for doing well in the past, and also look and talk like me. Their cultural fitness will be the highest, from my point of view. This is a combination of homophily and prestige bias, translated to the language of risk preference and rate of success estimation.
+
+This view may also provide insight into maladaptive cultural evolutionary patterns (rich people may refuse to imitate the successful strategies of previously poor people who discover a highly succesful niche/strategy, solely because they associate their cultural traits with low rates of success), and their relationship to ethnocentrism and discriminatory perceptions of particular groups. The association of certain sociocultural markers to rates of success could be used as part of an explanatory argument on why some cultural traits are associated to social class (cultural capital as an estimator of rate of success), even if they do not really have anything to do with the actual behaviors that generate payoffs. And scammers can dress and act in ways that make them appear superficially successful while promoting strategies that will lead people to ruin.
+
+"""
+
+# ╔═╡ Cell order:
+# ╟─8f0fa9ec-2fc6-11ec-0335-7db7be4165f1
+# ╟─fb06fa9b-b1a1-4edf-91cc-2c3c3f001ddb
+# ╟─a1376b33-ba41-48d4-a181-c335455f5c7a
+# ╟─ef6723f5-9b8b-4f89-87f7-61035685b709
+# ╟─bcce7181-3e18-44cb-bb86-1dcdd1d8ec22
+# ╟─81b5c243-d347-4759-b1f9-7249410849e7
+# ╟─fa9154c3-8bc2-49a6-a0ca-1b8756048326
+# ╟─cc362612-3b67-483b-9b55-933f0a9a1b65
