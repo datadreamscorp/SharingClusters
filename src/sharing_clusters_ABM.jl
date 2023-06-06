@@ -340,6 +340,7 @@ function abm_plots(model; legend=true)
 		label="s*",
 		lw=1.5
 	)
+	annotate!(2500, 0.2, text("B = $(model.B) \nC = $(model.C) \nu = $(model.u)", 7))
 
 	t_calc = 2500:5000
 	time_mean_size = sum(model.mean_cluster_size_vector[t_calc]) / length(t_calc)

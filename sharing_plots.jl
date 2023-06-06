@@ -370,9 +370,43 @@ savefig(kbarcito_plot, "./images/figure5.png")
 
 # ╔═╡ 7b18239f-a61a-4f48-80fb-3bb502a9a55b
 begin
-	khat_b5, kstar_b5 = sh.calculate_points_Sim(s, 5, 0.05, 1, w_0=0.1, max_kbar=35, reps=1000)
-	khat_b15, kstar_b15 = sh.calculate_points_Sim(s, 15, 0.15, 1, w_0=0.1, max_kbar=35, reps=1000)
-	khat_b30, kstar_b30 = sh.calculate_points_Sim(s, 30, 0.3, 1, w_0=0.1, max_kbar=35, reps=1000)
+	"""
+	begin
+		khat_b5, kstar_b5 = sh.calculate_points_Sim(s, 5, 0.05, 1, w_0=0.1, max_kbar=35, reps=1000)
+		khat_b15, kstar_b15 = sh.calculate_points_Sim(s, 15, 0.15, 1, w_0=0.1, max_kbar=35, reps=1000)
+		khat_b30, kstar_b30 = sh.calculate_points_Sim(s, 30, 0.3, 1, w_0=0.1, max_kbar=35, reps=1000)
+	
+		points = [
+				(khat_b5, kstar_b5),
+				(khat_b15, kstar_b15),
+				(khat_b30, kstar_b30),
+			]
+	
+		Bs = [5, 15, 30]
+		
+		df_b = [
+			DataFrame(
+				khat = points[i][1],
+				kstar = points[i][2],
+				u = 0:0.01:1,
+				B = Bs[i],
+				C = Bs[i]/100,
+				s = s
+			)
+			for i in 1:length(points)
+			]
+	
+		df_b = vcat(df_b...)
+	
+		CSV.write("./data/fig6_data.csv", df_b)
+	end
+	"""
+	
+md"
+##### The code in this cell can be uncommented and run to simulate the data for figure 6 and save it as a dataframe in the data folder.
+	
+> Be advised that these simulations might take **a while** to run to completion.
+"
 end
 
 # ╔═╡ f4ea2fd8-0196-47e6-bd4e-6f155f2a55d0
@@ -382,7 +416,11 @@ md"
 
 # ╔═╡ 202fab42-ddf1-4f7d-bb43-ff4ea9b7b9e0
 begin
-
+	b_df_saved = DataFrame(CSV.File("./data/fig6_data.csv"))
+	b_df5 = b_df_saved[b_df_saved.B .== 5, :]
+	b_df15 = b_df_saved[b_df_saved.B .== 15, :]
+	b_df30 = b_df_saved[b_df_saved.B .== 30, :]
+	
 	mksize = 3
 	ylimit = 35
 	
@@ -392,8 +430,8 @@ begin
 		lab=false 
 	)
 	scatter!(
-		0:0.01:1, 
-		khat_b5, 
+		b_df5.u, 
+		b_df5.khat, 
 		alpha=0.3, 
 		markersize=mksize, 
 		label="", 
@@ -407,8 +445,8 @@ begin
 		lw=2.5
 	)
 	scatter!(
-		0:0.01:1, 
-		kstar_b5, 
+		b_df5.u, 
+		b_df5.kstar, 
 		alpha=0.3, 
 		markersize=mksize, 
 		label="", 
@@ -421,6 +459,7 @@ begin
 		color=RGBA(0.9,0.5,0.5,0.9),
 		lw=2.5
 	)
+	annotate!(0.25, 23, text("s = $s\nβ = 1", 8))
 	
 	
 	
@@ -432,16 +471,16 @@ begin
 		yax=nothing
 	)
 	scatter!(
-		0:0.01:1, 
-		khat_b15, 
+		b_df15.u, 
+		b_df15.khat, 
 		alpha=0.3, 
 		markersize=mksize, 
 		label="k̄*", 
 		color=RGBA(0.5,0.5,0.9,0.8)
 	)
 	scatter!(
-		0:0.01:1, 
-		kstar_b15, 
+		b_df15.u, 
+		b_df15.kstar, 
 		alpha=0.3, 
 		markersize=mksize, 
 		label="k̃", 
@@ -458,16 +497,16 @@ begin
 		yax=nothing
 	)
 	scatter!(
-		0:0.01:1, 
-		khat_b30, 
+		b_df30.u, 
+		b_df30.khat, 
 		alpha=0.3, 
 		markersize=mksize, 
 		label="k̄*", 
 		color=RGBA(0.5,0.5,0.9,0.8)
 	)
 	scatter!(
-		0:0.01:1, 
-		kstar_b30, 
+		b_df30.u, 
+		b_df30.kstar, 
 		alpha=0.3, 
 		markersize=mksize, 
 		label="k̃", 
@@ -549,6 +588,12 @@ begin
 		ylabel="t = 5000",
 		legend=false 
 	)
+	annotate!(
+		0.25, 
+		5, 
+		text("B = $(model.B) \nC = $(model.C) \nu = $(model.u) \nβ = 1", 8)
+	)
+	
 	cluster_hist_post = histogram( 
 		sizes, 
 		bins=0:1:maximum(sizes)+1, 
