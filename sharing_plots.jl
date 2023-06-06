@@ -290,8 +290,10 @@ begin
 	x = 0.01:0.001:1
 	f(x) = log( -0.25/( log(1-x) ) ) / ( log(1-x) )
 
+	bc_ratios = sort( collect(50:20:500), rev=true )
+	
 	cb_ratios = sort( collect(0.002:0.005:0.1), rev=true )
-	y_step = 0.2
+	y_step = 0.1
 	
 	kopt_plot = plot( x, f.(x), 
 		ylim=(0,18), 
@@ -302,10 +304,16 @@ begin
 	)
 
 	count = 1
-	for cb in cb_ratios
-		yh = 10 + count*y_step
-		g(x) = log( -cb/( x * log(1-x) ) ) / ( log(1-x) )
-		col = RGBA((1 - cb/maximum(cb_ratios))*1,0.1,0.01,0.9)
+	for cb in bc_ratios
+		yh = 13 - count*y_step
+		#g(x) = log( -cb/( x * log(1-x) ) ) / ( log(1-x) )
+		g(x) = log( -(1/cb)/( x * log(1-x) ) ) / ( log(1-x) )
+		col = RGBA(
+			1 - findall(x->x==cb, bc_ratios)[1]*(1/length(bc_ratios)),
+			0.1,
+			0.01,
+			0.9
+		)
 		plot!( x, g.(x), 
 			color=col,
 			lw=2
@@ -320,9 +328,9 @@ begin
 
 	hline!( [1], color="dark blue", lw=1.5 )
 	annotate!( [
-		(0.78, 10, text("0.1", 6)),
-		(0.785, 14.4, text("0.002", 6)),
-		(0.75, 16, text("connection cost /\nexpected shared benefit\nratio", 8))
+		(0.78, 10.4, text("50", 6)),
+		(0.785, 13.3, text("500", 6)),
+		(0.75, 15.2, text("expected shared benefit /\nconnection cost\nratio", 8))
 	]
 	)
 	
@@ -344,16 +352,17 @@ begin
 	
 	kbarcito_plot = plot(
 		0.001:0.01:1, kbar_bound, 
-		lw=2, alpha=0.5,
+		lw=3, alpha=0.5,
 		ylab = "maximum mean degree (k̄*)",
 		xlab = "probability of success (u)",
 		label = "with boundaries"
 	)
 	plot!(
 		0.001:0.01:1, kbar_no_bound,
-		lw=2, alpha=0.5,
+		lw=3, alpha=0.5,
 		label = "no boundaries"
 	)
+	annotate!(0.85, 11, text("B = 5\nC = 0.05\nβ = 1", 8))
 end
 
 # ╔═╡ 6e1100d8-3fd8-4453-9039-77054526452b
@@ -483,14 +492,14 @@ savefig(zeros_plot, "./images/figure6_unlabeled.png")
 
 # ╔═╡ d6e31887-51e2-4a9c-92e5-05143a1871a3
 md"
-### Agent-Based Model of fission-fusion cluster dynamics
+### Agent-based model of fission-fusion cluster dynamics
 "
 
 # ╔═╡ ced5cd17-939b-456b-a990-4eebdab1f5c5
 model = sh.sharing_groups_model(;
 	max_N=200,
 	n=200,
-	B=10.0,
+	B=4.0,
 	bc_ratio=100.0,
 	u=u,
 	T=100,
@@ -506,14 +515,14 @@ begin
 	s_hist_init = histogram( 
 			[a.s for a in allagents(model)],
 			bins = 0:0.01:1, 
-			ylabel="t = 0", 
-			legend=false 
+			ylabel = "t = 0", 
+			legend = false 
 		)
 	cluster_hist_init = histogram( 
 			[a.size for a in allagents(model)],
-			xlabel="", 
-			legend=false,
-			color="dark red"  
+			xlabel = "", 
+			legend = false,
+			color = "dark red"  
 		)
 	l1 = @layout [
 				grid(2,2)
@@ -547,13 +556,25 @@ begin
 		legend=false,
 		color="dark red"
 	)
+
+	s_hist_complete = plot(
+		s_hist_init,
+		s_hist_post,
+		layout=(2,1),
+		link=:all,
+	)
+
+	cluster_hist_complete  = plot(
+		cluster_hist_init,
+		cluster_hist_post,
+		layout=(2,1),
+		link=:all,
+	)
 	
 	abm_hist_grid = plot(
-			s_hist_init, 
-			cluster_hist_init,
-			s_hist_post,
-			cluster_hist_post,
-			layout=l1
+			s_hist_complete, 
+			cluster_hist_complete,
+			layout=(1,2)
 		)
 end
 
@@ -565,66 +586,15 @@ md"
 ### Figure 8 - Time trajectories for sharing norms and cluster sizes
 "
 
-# ╔═╡ ebdc0228-b803-4391-b6e9-29c8504d388f
-begin
-	opt_s = sh.optshare(B, median(sizes), u=u, c=C)
-	s_time_plot = plot( 
-		model.mean_sharing_vector, 
-		xlabel="", 
-		ylab="sharing norm", 
-		label="mean",
-		lw=1.5
-	)
-	plot!( 
-		model.median_sharing_vector, 
-		xlabel="", 
-		label="median",
-		lw=1.5
-	)
-	hline!(
-		[opt_s],
-		label="s*",
-		lw=1.5
-	)
-	
-	t_calc = 2500:5000
-	time_mean_size = sum(model.mean_cluster_size_vector[t_calc]) / length(t_calc) 
-	
-	kbar_time_plot = plot( 
-		model.mean_cluster_size_vector, 
-		color="blue",
-		xlabel="time",
-		ylabel="cluster size",
-		label="mean",
-		lw=2
-	)
-	plot!( 
-		model.median_cluster_size_vector, 
-		color="dark red",
-		xlabel="time",
-		label="median",
-		#legend=false
-	)
-	hline!( 1 .+ (0.5 .* [sh.kmax(u, B=B, C=C, s=s)]), lw=2, label="(k̄*/2) + 1" )
-	hline!([time_mean_size], lw=2.5, label = "time-averaged mean")
-	
-	l2 = @layout [
-					grid(2,1)
-			     	]
-	
-	abm_time_plots = plot(
-		s_time_plot,
-		kbar_time_plot,
-		layout = l2
-	)
-end
+# ╔═╡ adb1cbd7-87c4-4755-919a-f3905cae2c5b
+abm_time_plots = sh.abm_plots(model)
 
 # ╔═╡ 7673ee2a-59fd-4aa3-937e-064e4cdbbd9c
 savefig(abm_time_plots, "./images/figure8.png")
 
 # ╔═╡ f7e2e305-d635-430c-b88b-059e9ba43ca7
 md"
-### Figure 9 - Predicted mean cluster size from approximation vs. ABM simulations
+### Figure 9 - Expected cluster size estimate from approximation vs. ABM simulations
 "
 
 # ╔═╡ d71b0faf-0a78-47c1-9908-d7db9c1c5066
@@ -652,6 +622,14 @@ begin
 		end
 		
 		pi = plot(
+			df2.u, 
+			df2.mean_cluster_size_mean,
+			legend=:top,
+			label = counter == length(idx)/2 + 1 ? "mean" : "",
+			lw=2,
+			ylab=y_label
+		)
+		plot!(
 			df2.u, 
 			df2.median_cluster_size_mean,
 			legend=:top,
@@ -689,7 +667,7 @@ savefig(kbar_sweep_plot, "./images/figure9_unlabeled.png")
 
 # ╔═╡ 3b1b541b-8027-449d-9177-b452d2c181da
 md"
-### Figure 10 - Approximate optimal sharing norm vs. ABM simulations
+### Figure 10 - Optimal sharing norm estimate ($s^*$) vs. ABM simulations
 "
 
 # ╔═╡ aaf7d958-225f-43f2-b7ad-15fca6c58bbe
@@ -708,7 +686,15 @@ begin
 		df3 = groupby(df3, :B)
 		df3 = combine(df3, valuecols(df3) .=> mean )
 	
-		opt_curve = clamp.( sh.optshare.(df3.B, df3.median_cluster_size_mean), 0, 1)
+		opt_curve = clamp.( 
+			sh.optshare2.(
+				df3.B, 
+				df3.median_cluster_size_mean,
+				U[i],
+				df3.C_mean), 
+			0, 
+			1
+		)
 
 		if counter2 == 1
 			y_label = "ζ = 0.01"
@@ -776,7 +762,7 @@ end
 
 # ╔═╡ Cell order:
 # ╟─cb223404-03aa-11ee-0e4f-037151aa72ac
-# ╟─f9c52e88-ef18-4bb5-976c-0eb909155570
+# ╠═f9c52e88-ef18-4bb5-976c-0eb909155570
 # ╟─860a03ef-32ff-4563-9e25-380359069f49
 # ╟─d6e849ab-77ff-45d6-8c50-b0117f95968e
 # ╟─dcb1a731-4658-4699-bedf-6174ca8c76dd
@@ -808,7 +794,7 @@ end
 # ╟─a2f3a45d-36d5-4add-b6db-60497f04de59
 # ╟─363296c2-4a56-46d2-959d-39aff603e1be
 # ╟─4efa0a3a-b935-4787-9186-4c0cb42dc060
-# ╟─ebdc0228-b803-4391-b6e9-29c8504d388f
+# ╟─adb1cbd7-87c4-4755-919a-f3905cae2c5b
 # ╟─7673ee2a-59fd-4aa3-937e-064e4cdbbd9c
 # ╟─f7e2e305-d635-430c-b88b-059e9ba43ca7
 # ╟─d71b0faf-0a78-47c1-9908-d7db9c1c5066

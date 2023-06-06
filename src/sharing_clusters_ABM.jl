@@ -38,6 +38,7 @@ function sharing_groups_model(;
 	size_bias::Bool = true, #whether there is a size bias in recruitment,
 	seed::Int64 = 80085,
 	true_random::Bool = false,
+	total_ticks::Int64 = 5000,
 	)
 
 	model = ABM(
@@ -76,6 +77,7 @@ function sharing_groups_model(;
 			:tick => 0,
 			:rep => rep,
 			:size_bias => size_bias,
+			:total_ticks => total_ticks,
 		),
 		rng = true_random ? RandomDevice() : MersenneTwister(seed),
 	)
@@ -269,7 +271,10 @@ function sharing_step!(model)
 	growth!(model)
 	death_and_fission!(model)
 
-	sharings = [a.s for a in allagents(model)]
+	sharings = [
+		a.size > 1 ? a.s : 0.0
+		for a in allagents(model)
+		]
 	model.mean_sharing = mean(sharings)
 	model.median_sharing = median(sharings)
 
@@ -285,7 +290,90 @@ function sharing_step!(model)
 	push!(model.num_clusters_vector, model.current_N)
 
 	model.tick += 1
+
+	if model.tick == model.total_ticks
+		loners = filter(a -> a.size == 1, allagents(model)|>collect)
+		for a in loners
+			a.s = 0.0
+		end
+	end
 end
 
 
+function abm_plots(model; legend=true)
+
+	function kmax(u; β=1.0, B=6.0, C=6.0/200, δ_base=0.2, s=0.7)
+		δ_0 = δ_base + log(B - 1)
+
+		r1 = ( u*(β - u^(δ_0-1))*s*B / C )
+		r2 = ( log(1-u) * u * (1-u)^(r1) * s*β*B / C )
+
+		if r2 > -1/exp(1)
+			kbar = ( r1 - ( lambertw(r2) / log(1-u) ) ) / β
+			kbar = kbar > 0 ? kbar : 0
+		else
+			kbar = 0
+		end
+
+		return kbar
+	end
+
+	optshare(b, k; u=0.5, c=0.1, β=1) = ( ( (β*k*c - 1) / ( 1 - (1-u)^(β*k) )*β ) + ( (1-u)*(b - β*k*c) / ( 1 - u*β*( 1 - (1-u)^(β*k) ) ) ) ) / b
+
+	opt_s = optshare(model.B, model.median_cluster_size, u=model.u, c=model.C)
+	s_time_plot = plot(
+		model.mean_sharing_vector,
+		xlabel="",
+		ylab="sharing norm",
+		label="mean",
+		lw=1.5,
+		legend=legend,
+	)
+	plot!(
+		model.median_sharing_vector,
+		xlabel="",
+		label="median",
+		lw=1.5
+	)
+	hline!(
+		[clamp(opt_s, 0, 1)],
+		label="s*",
+		lw=1.5
+	)
+
+	t_calc = 2500:5000
+	time_mean_size = sum(model.mean_cluster_size_vector[t_calc]) / length(t_calc)
+
+	kbar_time_plot = plot(
+		model.mean_cluster_size_vector,
+		color="blue",
+		xlabel="time",
+		ylabel="cluster size",
+		label="mean",
+		lw=2,
+		legend=legend
+	)
+	plot!(
+		model.median_cluster_size_vector,
+		color="dark red",
+		xlabel="time",
+		label="median",
+		#legend=false
+	)
+	hline!(
+		[1 .+ ( 0.5 .* kmax(model.u, B=model.B, C=model.C, s=model.median_sharing) )],
+		lw=2,
+		label="(k̄*/2) + 1"
+	)
+	#hline!([time_mean_size], lw=2.5, label = "time-averaged mean")
+
+	abm_time_plots = plot(
+		s_time_plot,
+		kbar_time_plot,
+		layout = (2,1)
+	)
+
+	return abm_time_plots
+
+end
 #end # module sharing_clusters_ABM
