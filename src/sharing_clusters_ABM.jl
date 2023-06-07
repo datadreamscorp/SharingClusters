@@ -32,7 +32,7 @@ function sharing_groups_model(;
 	u::Float64 = 0.5, #average risk
 	δ::Float64 = exp(1) - 1, #strength of selection
 	#γ::Float64 = 10.0, #steepness of sigmoid for fission probability
-	σ_small::Float64 = 0.05, #variance of inherited sharing norm after fission
+	σ_small::Float64 = 0.01, #variance of inherited sharing norm after fission
 	σ_large::Float64 = 0.05, #prob of large mutation in sharing norm after fission
 	rep::Int64 = 1, #replicate number (paramscan only)
 	size_bias::Bool = true, #whether there is a size bias in recruitment,
@@ -338,7 +338,7 @@ function abm_plots(model; legend=true)
 	hline!(
 		[clamp(opt_s, 0, 1)],
 		label="s*",
-		lw=1.5
+		lw=2
 	)
 	annotate!(2500, 0.2, text("B = $(model.B) \nC = $(model.C) \nu = $(model.u)", 7))
 
